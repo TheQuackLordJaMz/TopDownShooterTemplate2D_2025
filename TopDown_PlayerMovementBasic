@@ -1,0 +1,37 @@
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    // How fast the player moves
+    [SerializeField] private float speed = 5f;
+
+    // Reference to the Rigidbody2D component (used for physics movement)
+    [SerializeField] private Rigidbody2D rb;
+
+    // Store raw input values for horizontal (A/D, Left/Right) and vertical (W/S, Up/Down)
+    private float moveX;
+    private float moveY;
+
+    private void Start()
+    {
+        // Get and cache the Rigidbody2D component attached to this GameObject
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        // Read player input from Unity's old Input system
+        // "Horizontal" = A/D or Left/Right arrows
+        // "Vertical"   = W/S or Up/Down arrows
+        moveX = Input.GetAxisRaw("Horizontal");
+        moveY = Input.GetAxisRaw("Vertical");
+    }
+
+    private void FixedUpdate()
+    {
+        // Move the Rigidbody2D based on input
+        // .normalized ensures diagonal movement isn't faster
+        // multiplied by 'speed' to control movement speed
+        rb.linearVelocity = new Vector2(moveX, moveY).normalized * speed;
+    }
+}
