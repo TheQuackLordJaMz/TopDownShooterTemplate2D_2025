@@ -1,0 +1,71 @@
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    [SerializeField] private float speed = 5f;          // How fast the player moves
+    [SerializeField] private Rigidbody2D rb;            // Rigidbody2D used for movement
+
+    private float moveX;                                // Input value for left/right
+    private float moveY;                                // Input value for up/down
+
+    [SerializeField] private GameObject bullet;         // Bullet prefab to spawn
+    [SerializeField] private Transform firePoint;       // Position where bullets are created
+
+    [Range(0.1f, 1f)]
+    [SerializeField] private float fireRate = 0.5f;     // Time between shots
+    public float fireTimer;                             // Counts down to allow next shot
+
+    private Vector2 mousePos;                           // Mouse position in world space
+    public GameObject aimCursor;                        // Custom cursor object
+
+    private void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();               // Get Rigidbody2D component on player
+
+        Cursor.visible = false;                         // Hide the normal system cursor
+        Instantiate(aimCursor);                         // Create the custom aim cursor
+    }
+
+    private void Update()
+    {
+        // Get keyboard input for movement
+        moveX = Input.GetAxisRaw("Horizontal");         // A/D or Left/Right arrows
+        moveY = Input.GetAxisRaw("Vertical");           // W/S or Up/Down arrows
+
+        // Convert mouse screen position into world position
+        mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        // Find the angle from player to mouse (in degrees)
+        float angle = Mathf.Atan2(
+            mousePos.y - transform.position.y,
+            mousePos.x - transform.position.x
+        ) * Mathf.Rad2Deg - 90f;
+
+        // Rotate the player so they face the mouse
+        transform.localRotation = Quaternion.Euler(0, 0, angle);
+
+        // Check for shooting input
+        if (Input.GetMouseButton(0) && fireTimer <= 0f) // Left mouse button pressed
+        {
+            Shoot();                                    // Fire a bullet
+            fireTimer = fireRate;                       // Reset timer before next shot
+        }
+        else
+        {
+            fireTimer -= Time.deltaTime;                // Countdown until we can shoot again
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        // Move the player using Rigidbody2D
+        // Normalized stops diagonal movement from being faster
+        rb.linearVelocity = new Vector2(moveX, moveY).normalized * speed;
+    }
+
+    void Shoot()
+    {
+        // Create a bullet at the firePoint position and rotation
+        Instantiate(bullet, firePoint.position, firePoint.rotation);
+    }
+}
