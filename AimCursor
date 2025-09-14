@@ -1,0 +1,22 @@
+using UnityEngine;
+
+public class AimCursorController : MonoBehaviour
+{
+    private Camera mainCamera;
+
+    private void Start()
+    {
+        mainCamera = Camera.main;
+        Cursor.visible = false; // Hide the system cursor
+    }
+
+    private void Update()
+    {
+        // Get the mouse position in world space
+        Vector3 mousePosition = Input.mousePosition;
+        Vector3 worldPosition = mainCamera.ScreenToWorldPoint(mousePosition);
+
+        // Set the cursor position (z should be 0 for 2D)
+        transform.position = new Vector3(worldPosition.x, worldPosition.y, 0);
+    }
+}
