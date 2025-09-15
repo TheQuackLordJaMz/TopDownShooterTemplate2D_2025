@@ -1,0 +1,37 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+public class SmoothCameraFollow : MonoBehaviour
+{
+    // Offset from the target’s position (e.g., to keep the camera slightly above or behind the player).
+    [SerializeField] private Vector3 offset;
+
+    // The smoothing factor that controls how fast the camera follows the target.
+    [SerializeField] private float damping;
+
+    // The object (usually the player) that the camera will follow.
+    public Transform target;
+
+    // Internal variable used by SmoothDamp to track the current velocity of the camera.
+    private Vector3 vel = Vector3.zero;
+
+    private void Start()
+    {
+        // Nothing happens here, but could be used later for initialization if needed.
+    }
+
+    private void FixedUpdate()
+    {
+        // Calculate the target position by adding the offset to the target’s position.
+        Vector3 targetPos = target.position + offset;
+
+        // Keep the camera's Z position fixed (important in 2D so the camera doesn’t move forward/backward).
+        targetPos.z = transform.position.z;
+
+        // Smoothly move the camera from its current position to the target position.
+        // SmoothDamp gradually reduces the difference between the current and target positions over time,
+        // creating a smooth camera movement instead of snapping directly.
+        transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref vel, damping);
+    }
+}
