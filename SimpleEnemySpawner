@@ -1,0 +1,52 @@
+using System.Collections.Generic; // Used for generic collections (e.g., List<T>, Dictionary<K,V>) 
+using UnityEngine;
+using System.Collections; // Required for IEnumerator and coroutines
+
+public class EnemySpawner : MonoBehaviour
+{
+    // Time (in seconds) between spawns
+    [SerializeField] private float spawnRate;
+
+    // Array of enemy prefabs to choose from when spawning
+    [SerializeField] private GameObject[] enemyPrefabs;
+
+    // Control flag to determine whether enemies should keep spawning
+    [SerializeField] private bool canSpawn = true;
+
+    private void Start()
+    {
+        // Start the Spawner coroutine when the game begins
+        StartCoroutine(Spawner());
+    }
+
+    private void Update()
+    {
+        // Currently empty — could be used later for extra logic
+        // (e.g., stopping spawns when the player dies)
+    }
+
+    // Coroutine that spawns enemies repeatedly
+    private IEnumerator Spawner() 
+    {
+        // Cache a WaitForSeconds object to avoid creating a new one every loop
+        WaitForSeconds wait = new WaitForSeconds(spawnRate);
+
+        // Loop will run continuously as long as canSpawn is true
+        while (canSpawn) 
+        {
+            // Wait for the defined spawn interval
+            yield return wait;
+
+            // Pick a random index from the enemyPrefabs array
+            int rand = Random.Range(0, enemyPrefabs.Length);
+
+            // Select the prefab at the random index
+            GameObject enemyToSpawn = enemyPrefabs[rand];
+
+            // Instantiate the chosen enemy at the spawner's position
+            // Quaternion.identity means "no rotation"
+            Instantiate(enemyToSpawn, transform.position, Quaternion.identity);
+        }
+    }
+}
+
