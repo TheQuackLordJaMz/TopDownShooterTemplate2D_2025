@@ -1,0 +1,93 @@
+
+using UnityEngine;
+
+public class Enemy : MonoBehaviour
+{
+    // Reference to the player's transform (will be set when found)
+    public Transform target;
+
+    // Speed of enemy movement
+    [SerializeField] private float speed = 3f;
+
+    // Rigidbody2D component used for physics-based movement
+    [SerializeField] private Rigidbody2D rb;
+
+    // Speed at which the enemy rotates towards the target
+    [SerializeField] private float rotateSpeed = 0.0025f;
+
+    private void Start()
+    {
+        // Get Rigidbody2D component attached to this GameObject
+        // This ensures rb is never null, even if not set in the Inspector
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        // If no target is assigned, try to find one
+        if (!target)
+        {
+            GetTarget();
+        }
+        else
+        {
+            // If target exists, rotate towards it
+            RotateTowardsTarget();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        // Continuously move forward in the direction the enemy is facing
+        // Note: In standard Unity, Rigidbody2D uses ".velocity", not ".linearVelocity".
+        // If ".linearVelocity" works, it may be part of DOTS/experimental physics.
+        rb.linearVelocity = transform.up * speed;
+    }
+
+    // Attempts to find the player in the scene using tag "Player"
+    void GetTarget()
+    {
+        if (GameObject.FindGameObjectWithTag("Player"))
+        {
+            // Assign the player's transform as the target
+            target = GameObject.FindGameObjectWithTag("Player").transform;
+        }
+    }
+
+    // Rotates enemy smoothly towards the player
+    void RotateTowardsTarget()
+    {
+        // Get direction vector from enemy to target
+        Vector2 targetDirection = target.position - transform.position;
+
+        // Convert direction into an angle in degrees
+        float angle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg - 90f;
+
+        // Create a rotation based on this angle
+        Quaternion q = Quaternion.Euler(new Vector3(0, 0, angle));
+
+        // Smoothly rotate from current rotation to target rotation
+        // rotateSpeed is very small (0.0025f), so rotation will appear slow
+        transform.localRotation = Quaternion.Slerp(transform.localRotation, q, rotateSpeed);
+    }
+
+    // Handles collisions with other objects
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        // If colliding with the player
+        if (other.gameObject.CompareTag("Player"))
+        {
+            Destroy(other.gameObject); // Destroy the player
+            target = null; // Reset target to force reacquisition later
+        }
+        // If colliding with a bullet
+        else if (other.gameObject.CompareTag("Bullet"))
+        {
+            Destroy(other.gameObject); // Destroy the bullet
+            Destroy(gameObject); // Destroy this enemy
+        }
+        {
+            // This empty block does nothing and could be safely removed
+        }
+    }
+}
